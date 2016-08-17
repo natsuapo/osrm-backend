@@ -6,6 +6,9 @@
       - Handle `oneway=alternating` (routed over with penalty) separately from `oneway=reversible` (not routed over due to time dependence)
     - Guidance
       - Notifications are now exposed more prominently, announcing turns onto a ferry/pushing your bike more prominently
+      - Improved turn angle calculation
+      - Corrected the bearings returned for intermediate steps - requires reprocessing
+      - Improved turn locations for collapsed turns
     - Trip Plugin
       - changed internal behaviour to prefer the smallest lexicographic result over the largest one
     - Bugfixes
