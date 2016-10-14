@@ -23,7 +23,6 @@ class CoordinateExtractor
     CoordinateExtractor(const util::NodeBasedDynamicGraph &node_based_graph,
                         const extractor::CompressedEdgeContainer &compressed_geometries,
                         const std::vector<extractor::QueryNode> &node_coordinates);
-    ~CoordinateExtractor();
 
     /* Find a interpolated coordinate a long the compressed geometries. The desired coordinate
      * should be in a certain distance. This method is dedicated to find representative coordinates
@@ -90,9 +89,9 @@ class CoordinateExtractor
      *
      * for fixpoint `b`, vector_base `d` and vector_head `e`
      */
-    util::Coordinate GetCorrectedCoordinate(const util::Coordinate &fixpoint,
-                                            const util::Coordinate &vector_base,
-                                            const util::Coordinate &vector_head) const;
+    util::Coordinate GetCorrectedCoordinate(const util::Coordinate fixpoint,
+                                            const util::Coordinate vector_base,
+                                            const util::Coordinate vector_head) const;
 
     /* generate a uniform vector of coordinates in same range distances
      *
@@ -133,8 +132,8 @@ class CoordinateExtractor
      */
     double GetMaxDeviation(std::vector<util::Coordinate>::const_iterator range_begin,
                            const std::vector<util::Coordinate>::const_iterator &range_end,
-                           const util::Coordinate &straight_begin,
-                           const util::Coordinate &straight_end) const;
+                           const util::Coordinate straight_begin,
+                           const util::Coordinate straight_end) const;
 
     /*
      * the curve is still best described as looking at the very first vector for the turn angle.
@@ -195,9 +194,6 @@ class CoordinateExtractor
                         const double segment_length,
                         const std::vector<double> &segment_distances,
                         const std::uint8_t considered_lanes) const;
-
-    std::size_t *times_called;
-    std::size_t *times_failed;
 };
 
 } // namespace guidance

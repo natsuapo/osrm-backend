@@ -297,18 +297,14 @@ double signedArea(const Coordinate first_coordinate,
                   const Coordinate second_coordinate,
                   const Coordinate third_coordinate)
 {
-    return 0.5 * (-static_cast<double>(toFloating(second_coordinate.lon)) *
-                      static_cast<double>(toFloating(first_coordinate.lat)) +
-                  static_cast<double>(toFloating(third_coordinate.lon)) *
-                      static_cast<double>(toFloating(first_coordinate.lat)) +
-                  static_cast<double>(toFloating(first_coordinate.lon)) *
-                      static_cast<double>(toFloating(second_coordinate.lat)) -
-                  static_cast<double>(toFloating(third_coordinate.lon)) *
-                      static_cast<double>(toFloating(second_coordinate.lat)) -
-                  static_cast<double>(toFloating(first_coordinate.lon)) *
-                      static_cast<double>(toFloating(third_coordinate.lat)) +
-                  static_cast<double>(toFloating(second_coordinate.lon)) *
-                      static_cast<double>(toFloating(third_coordinate.lat)));
+    const auto lat_1 = static_cast<double>(toFloating(first_coordinate.lat));
+    const auto lon_1 = static_cast<double>(toFloating(first_coordinate.lon));
+    const auto lat_2 = static_cast<double>(toFloating(second_coordinate.lat));
+    const auto lon_2 = static_cast<double>(toFloating(second_coordinate.lon));
+    const auto lat_3 = static_cast<double>(toFloating(third_coordinate.lat));
+    const auto lon_3 = static_cast<double>(toFloating(third_coordinate.lon));
+    return 0.5 * (-lon_2 * lat_1 + lon_3 * lat_1 + lon_1 * lat_2 - lon_3 * lat_2 - lon_1 * lat_3 +
+                  lon_2 * lat_3);
 }
 
 // check if a set of three coordinates is given in CCW order
@@ -316,7 +312,7 @@ bool isCCW(const Coordinate first_coordinate,
            const Coordinate second_coordinate,
            const Coordinate third_coordinate)
 {
-    return signedArea(first_coordinate,second_coordinate,third_coordinate) > 0;
+    return signedArea(first_coordinate, second_coordinate, third_coordinate) > 0;
 }
 
 } // ns coordinate_calculation

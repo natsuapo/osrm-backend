@@ -1,6 +1,6 @@
+#include "engine/guidance/post_processing.hpp"
 #include "extractor/guidance/toolkit.hpp"
 #include "extractor/guidance/turn_instruction.hpp"
-#include "engine/guidance/post_processing.hpp"
 
 #include "engine/guidance/assemble_steps.hpp"
 #include "engine/guidance/lane_processing.hpp"
@@ -335,7 +335,7 @@ void closeOffRoundabout(const bool on_roundabout,
 
                     auto bearings = propagation_step.intersections.front().bearings;
                     propagation_step.maneuver.instruction.direction_modifier =
-                        ::osrm::util::guidance::getTurnDirection(angle);
+                        util::guidance::getTurnDirection(angle);
                 }
 
                 forwardStepSignage(propagation_step, destination_copy);
@@ -523,11 +523,6 @@ void collapseTurnAt(std::vector<RouteStep> &steps,
             return false;
         else
         {
-            const auto hasRampType = [](const RouteStep &step) {
-                return step.maneuver.instruction.type == TurnType::OffRamp ||
-                       step.maneuver.instruction.type == TurnType::OnRamp;
-            };
-
             const auto is_short_and_collapsable =
                 openining_turn.distance <= MAX_COLLAPSE_DISTANCE &&
                 isCollapsableInstruction(finishing_turn.maneuver.instruction);
@@ -543,8 +538,8 @@ void collapseTurnAt(std::vector<RouteStep> &steps,
             // tagged late
             const auto is_delayed_turn_onto_a_ramp =
                 openining_turn.distance <= 4 * MAX_COLLAPSE_DISTANCE && without_choice &&
-                hasRampType(finishing_turn);
-            return !hasRampType(openining_turn) &&
+                util::guidance::hasRampType(finishing_turn.maneuver.instruction);
+            return !util::guidance::hasRampType(openining_turn.maneuver.instruction) &&
                    (is_short_and_collapsable || is_not_too_long_and_choiceless ||
                     isLinkroad(openining_turn) || is_delayed_turn_onto_a_ramp);
         }
@@ -604,7 +599,8 @@ void collapseTurnAt(std::vector<RouteStep> &steps,
         {
             if (current_step.maneuver.instruction.type == TurnType::OnRamp ||
                 current_step.maneuver.instruction.type == TurnType::OffRamp)
-                steps[one_back_index].maneuver.instruction.type = current_step.maneuver.instruction.type;
+                steps[one_back_index].maneuver.instruction.type =
+                    current_step.maneuver.instruction.type;
             else
                 steps[one_back_index].maneuver.instruction.type = TurnType::Turn;
         }
@@ -661,7 +657,7 @@ void collapseTurnAt(std::vector<RouteStep> &steps,
         steps[one_back_index] = elongate(std::move(steps[one_back_index]), current_step);
         const auto angle = findTotalTurnAngle(one_back_step, current_step);
         steps[one_back_index].maneuver.instruction.direction_modifier =
-            ::osrm::util::guidance::getTurnDirection(angle);
+            util::guidance::getTurnDirection(angle);
 
         invalidateStep(steps[step_index]);
     }
@@ -673,7 +669,7 @@ void collapseTurnAt(std::vector<RouteStep> &steps,
         steps[one_back_index].maneuver.instruction.type = TurnType::OnRamp;
         const auto angle = findTotalTurnAngle(one_back_step, current_step);
         steps[one_back_index].maneuver.instruction.direction_modifier =
-            ::osrm::util::guidance::getTurnDirection(angle);
+            util::guidance::getTurnDirection(angle);
 
         forwardStepSignage(steps[one_back_index], current_step);
         invalidateStep(steps[step_index]);
@@ -997,7 +993,7 @@ std::vector<RouteStep> collapseTurns(std::vector<RouteStep> steps)
 
                     const auto angle = findTotalTurnAngle(one_back_step, current_step);
                     steps[one_back_index].maneuver.instruction.direction_modifier =
-                        ::osrm::util::guidance::getTurnDirection(angle);
+                        util::guidance::getTurnDirection(angle);
                     invalidateStep(steps[step_index]);
                 }
                 else
@@ -1494,12 +1490,10 @@ std::vector<RouteStep> collapseUseLane(std::vector<RouteStep> steps)
     for (std::size_t step_index = 1; step_index < steps.size(); ++step_index)
     {
         const auto &step = steps[step_index];
-        if (step.maneuver.instruction.type == TurnType::UseLane &&
-            canCollapseUseLane(step))
+        if (step.maneuver.instruction.type == TurnType::UseLane && canCollapseUseLane(step))
         {
             const auto previous = getPreviousIndex(step_index, steps);
-            steps[previous] = elongate(steps[previous], steps[step_index]);
-            // elongate(steps[step_index-1], steps[step_index]);
+            steps[previous] = elongate(std::move(steps[previous]), steps[step_index]);
             invalidateStep(steps[step_index]);
         }
     }

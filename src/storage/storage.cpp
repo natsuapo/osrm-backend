@@ -751,7 +751,8 @@ int Storage::Run()
         static_cast<SharedDataTimestamp *>(data_type_memory->Ptr());
 
     {
-        boost::interprocess::scoped_lock<boost::interprocess::named_sharable_mutex> query_lock(barrier.query_mutex);
+        boost::interprocess::scoped_lock<boost::interprocess::named_sharable_mutex> query_lock(
+            barrier.query_mutex);
 
         data_timestamp_ptr->layout = layout_region;
         data_timestamp_ptr->data = data_region;

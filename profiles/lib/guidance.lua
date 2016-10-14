@@ -60,11 +60,30 @@ function Guidance.set_classification (highway, result, input_way)
         result.road_classification.may_be_ignored = true;
     end
 
-    lane_count = input_way:get_value_by_key("lanes")
+    local lane_count = input_way:get_value_by_key("lanes")
     if lane_count and lane_count ~= "" then
-        lc = tonumber(lane_count)
+        local lc = tonumber(lane_count)
         if lane_count ~= nil then
             result.road_classification.num_lanes = lc
+        end
+    else
+        local total_count = 0
+        local forward_count = input_way:get_value_by_key("lanes:forward")
+        if forward_count and forward_count ~= "" then
+            local fc = tonumber(forward_count)
+            if fc ~= nil then
+                total_count = fc
+            end
+        end
+        local backward_count = input_way:get_value_by_key("lanes:backward")
+        if backward_count and backward_count ~= "" then
+            local bc = tonumber(backward_count)
+            if bc ~= nil then
+                total_count = total_count + bc
+            end
+        end
+        if total_count ~= 0 then
+            result.road_classification.num_lanes = total_count
         end
     end
 end

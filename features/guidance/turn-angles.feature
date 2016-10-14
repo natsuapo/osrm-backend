@@ -206,7 +206,7 @@ Feature: Simple Turns
             | c,a       | road,road      | depart,arrive                |
             | g,a       | turn,road,road | depart,turn left,arrive      |
             | g,c       | turn,road,road | depart,turn right,arrive     |
-            | g,f       | turn,road,road | depart,turn left,arrive      |
+            | g,f       | turn,road      | depart,arrive                |
             | c,f       | road,road,road | depart,continue right,arrive |
             | a,f       | road,road,road | depart,continue uturn,arrive |
 
@@ -308,9 +308,9 @@ Feature: Simple Turns
             | efb   | primary | road | 2     | yes    |
 
         When I route I should get
-            | waypoints | route     | turns         | intersections                                |
-            | a,d       | road,road | depart,arrive | true:90,false:45 true:135 false:270;true:270 |
-            | e,a       | road,road | depart,arrive | true:270,false:45 true:135 true:270;true:90  |
+            | waypoints | route     | turns         | intersections ;  |
+            | a,d       | road,road | depart,arrive | true:90;true:270 |
+            | e,a       | road,road | depart,arrive | true:270;rue:90  |
 
 
     #http://www.openstreetmap.org/#map=19/52.54759/13.43929
@@ -528,8 +528,53 @@ Feature: Simple Turns
             | a,i       | spree,,     | depart,turn right,arrive |
             | e,i       | spree,,     | depart,turn left,arrive  |
 
+    Scenario: Merge next to modelled turn
+        Given the node map
+            """
+                                        f - - - - - - - - - - - - - - - e
+                                      .
+
+                                    .
+
+                                 .
+
+            a - - - - - - - - b
+                               .\
+                                .\
+                                 .\
+                                  g \
+                                     \
+                                   .   \
+                                        c- - - - - - - - - - - - - - -  d
+                                    h
+                                    |
+                                    |
+                                    |
+                                    |
+                                    |
+                                    |
+                                    |
+                                    |
+                                    |
+                                    |
+                                    i
+            """
+
+        And the ways
+            | nodes | name  | oneway | lanes | highway       |
+            | ab    | spree | no     | 6     | tertiary      |
+            | bcd   | spree | yes    | 3     | tertiary      |
+            | efb   | spree | yes    | 3     | tertiary      |
+            | bghi  |       | no     |       | living_street |
+
+        When I route I should get
+            | waypoints | route       | turns                    |
+            | a,d       | spree,spree | depart,arrive            |
+            | e,a       | spree,spree | depart,arrive            |
+            | a,i       | spree,,     | depart,turn right,arrive |
+            | e,i       | spree,,     | depart,turn left,arrive  |
+
     # http://www.openstreetmap.org/#map=18/52.52147/13.41779
-    # currently not failing here, need to reproduce the behaviour
     Scenario: Parking Isle
         Given the node map
             """
@@ -606,7 +651,7 @@ Feature: Simple Turns
                 |                               |
                 |                               |
                 |                               |
-                g
+                g                               |
                 h - - - - - - - - - - - - - - - b - - - - - - - - - - - o
                 |                               |
                 |                               |
@@ -924,6 +969,8 @@ Feature: Simple Turns
             | e,a       | ,holz,holz | depart,turn left,arrive  |
             | c,e       | ,          | depart,arrive            |
             | c,a       | ,holz,holz | depart,turn right,arrive |
+            | a,c       | holz,,     | depart,turn left,arrive  |
+            | a,e       | holz,,     | depart,turn right,arrive |
 
     #http://www.openstreetmap.org/#map=19/52.45037/13.51923
     Scenario: Special Turn Road

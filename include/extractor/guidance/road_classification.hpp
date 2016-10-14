@@ -119,7 +119,7 @@ class RoadClassification
 
 static_assert(
     sizeof(RoadClassification) == 2,
-    "Road Classification should fit a byte. Increasing this has a severe impact on memory.");
+    "Road Classification should fit two bytes. Increasing this has a severe impact on memory.");
 
 inline bool canBeSeenAsFork(const RoadClassification first, const RoadClassification second)
 {
