@@ -567,7 +567,6 @@ int Storage::Run()
         shared_layout_ptr->GetBlockPtr<EdgeWeight, true>(
             shared_memory_ptr, SharedDataLayout::GEOMETRIES_FWD_WEIGHT_LIST);
 
-    geometry_input_stream.read((char *)&temporary_value, sizeof(unsigned));
     BOOST_ASSERT(temporary_value ==
                  shared_layout_ptr->num_entries[SharedDataLayout::GEOMETRIES_FWD_WEIGHT_LIST]);
 
@@ -581,7 +580,6 @@ int Storage::Run()
         shared_layout_ptr->GetBlockPtr<EdgeWeight, true>(
             shared_memory_ptr, SharedDataLayout::GEOMETRIES_REV_WEIGHT_LIST);
 
-    geometry_input_stream.read((char *)&temporary_value, sizeof(unsigned));
     BOOST_ASSERT(temporary_value ==
                  shared_layout_ptr->num_entries[SharedDataLayout::GEOMETRIES_REV_WEIGHT_LIST]);
 
