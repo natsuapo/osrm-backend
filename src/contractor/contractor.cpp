@@ -550,7 +550,7 @@ EdgeID Contractor::LoadEdgeExpandedGraph(
                                  number_of_compressed_geometries *
                                      sizeof(EdgeWeight));
 
-            geometry_stream.read((char *)&(m_geometry_fwd_weight_list[0]),
+            geometry_stream.read((char *)&(m_geometry_rev_weight_list[0]),
                                  number_of_compressed_geometries *
                                      sizeof(EdgeWeight));
         }
