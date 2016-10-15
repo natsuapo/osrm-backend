@@ -61,7 +61,7 @@ unsigned CompressedEdgeContainer::GetZippedPositionForForwardID(const EdgeID edg
 {
     auto map_iterator = m_forward_edge_id_to_zipped_index_map.find(edge_id);
     BOOST_ASSERT(map_iterator != m_forward_edge_id_to_zipped_index_map.end());
-    BOOST_ASSERT(map_iterator->second < m_compressed_geometries.size());
+    BOOST_ASSERT(map_iterator->second < m_compressed_geometry_nodes.size());
     return map_iterator->second;
 }
 
@@ -69,14 +69,14 @@ unsigned CompressedEdgeContainer::GetZippedPositionForReverseID(const EdgeID edg
 {
     auto map_iterator = m_reverse_edge_id_to_zipped_index_map.find(edge_id);
     BOOST_ASSERT(map_iterator != m_reverse_edge_id_to_zipped_index_map.end());
-    BOOST_ASSERT(map_iterator->second < m_compressed_geometries.size());
+    BOOST_ASSERT(map_iterator->second < m_compressed_geometry_nodes.size());
     return map_iterator->second;
 }
 
 void CompressedEdgeContainer::SerializeInternalVector(const std::string &path) const
 {
     boost::filesystem::fstream geometry_out_stream(path, std::ios::binary | std::ios::out);
-    const unsigned compressed_geometries = m_compressed_geometries.size() + 1;
+    const unsigned compressed_geometries = m_compressed_geometry_nodes.size() + 1;
     BOOST_ASSERT(std::numeric_limits<unsigned>::max() != compressed_geometries);
     geometry_out_stream.write((char *)&compressed_geometries, sizeof(unsigned));
 
@@ -278,7 +278,9 @@ void CompressedEdgeContainer::AddUncompressedEdge(const EdgeID edge_id,
 
 void CompressedEdgeContainer::InitializeBothwayVector()
 {
-    m_compressed_geometries.reserve(m_compressed_oneway_geometries.size() / 2);
+    m_compressed_geometry_nodes.reserve(m_compressed_oneway_geometries.size() / 2);
+    m_compressed_geometry_fwd_weights.reserve(m_compressed_oneway_geometries.size() / 2);
+    m_compressed_geometry_rev_weights.reserve(m_compressed_oneway_geometries.size() / 2);
 }
 
 unsigned CompressedEdgeContainer::ZipEdges(const EdgeID f_edge_id, const EdgeID r_edge_id)
@@ -288,13 +290,15 @@ unsigned CompressedEdgeContainer::ZipEdges(const EdgeID f_edge_id, const EdgeID 
 
     BOOST_ASSERT(forward_bucket.size() == reverse_bucket.size());
 
-    const unsigned zipped_geometry_id = m_compressed_geometries.size();
+    const unsigned zipped_geometry_id = m_compressed_geometry_nodes.size();
     m_forward_edge_id_to_zipped_index_map[f_edge_id] = zipped_geometry_id;
     m_reverse_edge_id_to_zipped_index_map[r_edge_id] = zipped_geometry_id;
 
-    std::vector<CompressedEdge> zipped_edge_bucket;
     const auto &first_node = reverse_bucket.back();
-    zipped_edge_bucket.emplace_back(CompressedEdge{first_node.node_id, INVALID_EDGE_WEIGHT, first_node.weight});
+
+    m_compressed_geometry_nodes.emplace_back(first_node.node_id);
+    m_compressed_geometry_fwd_weights.emplace_back(INVALID_EDGE_WEIGHT);
+    m_compressed_geometry_rev_weights.emplace_back(first_node.weight);
 
     for (std::size_t i = 0; i < forward_bucket.size() - 1; ++i)
     {
@@ -303,12 +307,16 @@ unsigned CompressedEdgeContainer::ZipEdges(const EdgeID f_edge_id, const EdgeID 
 
         BOOST_ASSERT(fwd_node.node_id == rev_node.node_id);
 
-        zipped_edge_bucket.emplace_back(CompressedEdge{fwd_node.node_id, fwd_node.weight, rev_node.weight});
+        m_compressed_geometry_nodes.emplace_back(fwd_node.node_id);
+        m_compressed_geometry_fwd_weights.emplace_back(fwd_node.weight);
+        m_compressed_geometry_rev_weights.emplace_back(rev_node.weight);
     }
 
     const auto &last_node = forward_bucket.back();
-    zipped_edge_bucket.emplace_back(CompressedEdge{last_node.node_id, last_node.weight, INVALID_EDGE_WEIGHT});
-    m_compressed_geometries.emplace_back(std::move(zipped_edge_bucket));
+
+    m_compressed_geometry_nodes.emplace_back(last_node.node_id);
+    m_compressed_geometry_fwd_weights.emplace_back(last_node.weight);
+    m_compressed_geometry_rev_weights.emplace_back(INVALID_EDGE_WEIGHT);
 
     return zipped_geometry_id;
 }

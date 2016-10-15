@@ -67,7 +67,9 @@ class CompressedEdgeContainer
 
     void IncreaseFreeList();
     std::vector<OnewayEdgeBucket> m_compressed_oneway_geometries;
-    std::vector<EdgeBucket> m_compressed_geometries;
+    std::vector<NodeID> m_compressed_geometry_nodes;
+    std::vector<EdgeWeight> m_compressed_geometry_fwd_weights;
+    std::vector<EdgeWeight> m_compressed_geometry_rev_weights;
     std::vector<unsigned> m_free_list;
     std::unordered_map<EdgeID, unsigned> m_edge_id_to_list_index_map;
     std::unordered_map<EdgeID, unsigned> m_forward_edge_id_to_zipped_index_map;
